@@ -10,21 +10,34 @@
 <body>
 <header>
   <h1>三角関数の方程式・不等式を学ぼう</h1>
-  <div class="tools">
-    <div class="seg" id="unitSeg" role="group" aria-label="角度の表記">
-      <button type="button" data-rad="0" aria-pressed="true">度数法</button>
-      <button type="button" data-rad="1" aria-pressed="false">弧度法</button>
-    </div>
-    <button id="guideBtn" type="button">操作ガイド</button>
-  </div>
+  <button id="guideBtn" type="button">操作ガイド</button>
 </header>
 
-<nav class="tabs" role="tablist">
-  <button id="tabEq" role="tab" type="button" data-tab="eq" aria-selected="true">方程式</button>
-  <button id="tabIn" role="tab" type="button" data-tab="in" aria-selected="false">不等式</button>
-</nav>
+<section class="card sel" aria-label="問題の設定">
+  <div class="seg" id="kindSeg" role="group" aria-label="方程式・不等式">
+    <button type="button" data-kind="eq" aria-pressed="true">方程式</button>
+    <button type="button" data-kind="in" aria-pressed="false">不等式</button>
+  </div>
+  <div class="seg" id="fSeg" role="group" aria-label="三角関数の種類">
+    <button type="button" data-f="sin" aria-pressed="true">sinθ</button>
+    <button type="button" data-f="cos" aria-pressed="false">cosθ</button>
+    <button type="button" data-f="tan" aria-pressed="false">tanθ</button>
+  </div>
+  <label id="opWrap" hidden>不等号
+    <select id="op">
+      <option value=">=">≧</option><option value=">">＞</option>
+      <option value="<=">≦</option><option value="<">＜</option>
+    </select>
+  </label>
+  <label>右辺の値 <select id="rhs"></select></label>
+  <label>θの範囲 <select id="dom"></select></label>
+  <div class="seg" id="unitSeg" role="group" aria-label="角度の表記">
+    <button type="button" data-rad="0" aria-pressed="true">度数法</button>
+    <button type="button" data-rad="1" aria-pressed="false">弧度法</button>
+  </div>
+</section>
 
-<section id="problem" class="card show" aria-live="polite"></section>
+<section id="eqShow" class="card show" aria-live="polite"></section>
 
 <main>
   <div class="cvwrap">
@@ -32,49 +45,54 @@
   </div>
 
   <div class="side">
-    <div class="card">
+    <div class="card" id="readout">
       <div id="angleOut" class="big"></div>
       <div id="valOut" class="big"></div>
-      <div id="status" class="status" aria-live="polite"></div>
+      <div id="status" class="status"></div>
+    </div>
+
+    <div class="card" id="ctl">
       <label class="sl">角度
-        <input id="slider" type="range" min="0" max="359" step="1" aria-label="角度のスライダー">
+        <input id="slider" type="range" step="1" aria-label="角度のスライダー">
       </label>
       <div class="row">
-        <label>θ＝ <input id="angIn" type="text" size="7" aria-label="角度を入力"></label>
+        <label>θ＝ <input id="angIn" type="text" inputmode="text" size="7" aria-label="角度を入力"></label>
         <span id="angUnit"></span>
         <button id="angSet" type="button">移動</button>
       </div>
-      <div class="row steps">
+      <div class="row steps" id="steps">
         <button type="button" data-step="-15"></button>
         <button type="button" data-step="-1"></button>
         <button type="button" data-step="1"></button>
         <button type="button" data-step="15"></button>
       </div>
+      <details open>
+        <summary>特殊角に移動</summary>
+        <div id="specials" class="grid"></div>
+      </details>
     </div>
-
-    <div class="card actions">
-      <button id="nextBtn" type="button">次の問題</button>
-      <button id="revealBtn" type="button" class="primary">解答を確認</button>
-      <button id="resetBtn" type="button">リセット</button>
-    </div>
-
-    <div id="solBox" class="card sol" hidden aria-live="polite"></div>
   </div>
 </main>
+
+<section id="solBox" class="card sol" aria-live="polite"></section>
+
+<section class="quiz-area">
+  <button id="quizBtn" type="button">クイズに挑戦する</button>
+  <div id="quizBox" class="card" hidden></div>
+</section>
 
 <div id="modal" class="modal" hidden>
   <div class="modal-body" role="dialog" aria-modal="true" aria-labelledby="gTitle">
     <h2 id="gTitle">操作ガイド</h2>
     <ul>
-      <li><b>角度の変更：</b>単位円の半径をドラッグ（タッチ）、スライダー、数値入力、増減ボタンのどれでも動かせます。</li>
+      <li><b>角度の変更：</b>単位円の半径をドラッグ（タッチ）、スライダー、数値入力、増減ボタン、特殊角ボタンのどれでも変えられます。</li>
       <li><b>単位円の見方：</b>原点Oから点Pへの線が半径OP、x軸の正の向きから反時計回りに測った角がθです。</li>
       <li><b>sinθ：</b>点Pの<b>y座標</b>に注目します。x軸へ下ろした垂直な線の長さがsinθです。</li>
       <li><b>cosθ：</b>点Pの<b>x座標</b>に注目します。y軸へ引いた水平な線の長さがcosθです。</li>
-      <li><b>tanθ：</b>半径をのばして直線 x＝1（接線）と交わる点の高さがtanθです。</li>
-      <li><b>方程式の解の探し方：</b>点Pを動かし、値が右辺と等しくなる位置を探します。橙色の点線が基準線です。解は複数あることがあります。</li>
-      <li><b>不等式の見方：</b>基準線のどちら側に点Pがあるとき条件を満たすかを考えます。解答を確認すると、満たす範囲が青い弧で示されます。●は境界を含み、○は含みません。</li>
-      <li><b>度数法と弧度法：</b>右上のボタンで切り替えます。点の位置や解は変わりません。</li>
-      <li><b>解答の確認：</b>「解答を確認」を押すと解と説明が出ます。確認後も操作できます。「次の問題」で新しい問題、「リセット」でこの問題をやり直せます。</li>
+      <li><b>tanθ：</b>tanθ＝sinθ／cosθ です。半径をのばして直線 x＝1（接線）と交わる点の高さがtanθです。cosθ＝0 の角度では定義されません。</li>
+      <li><b>方程式：</b>右辺の値の線と単位円の交点が解です。橙色の丸と角度で示されます。</li>
+      <li><b>不等式：</b>不等号と右辺の値を選ぶと、条件を満たす範囲が青色で示されます。●は境界を含み、○は含みません。</li>
+      <li><b>色分けの意味：</b>黒い太線は今の半径、青は不等式を満たす範囲、橙は方程式の解です。</li>
     </ul>
     <button id="closeGuide" type="button" class="primary">閉じる</button>
   </div>
